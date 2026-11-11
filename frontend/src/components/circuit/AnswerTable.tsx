@@ -8,7 +8,7 @@ const HEADERS: Record<Quantity, { sym: string; label: string; unit: string }> = 
   E: { sym: "E", label: "Voltage", unit: "V" },
   I: { sym: "I", label: "Current", unit: "A" },
   R: { sym: "R", label: "Resistance", unit: "Ω" },
-  W: { sym: "W", label: "Power", unit: "W" },
+  W: { sym: "P", label: "Power", unit: "W" },
 };
 
 interface Props {
@@ -25,37 +25,45 @@ export default function AnswerTable({ puzzle, answers, results, revealed, onChan
       <table className="w-full min-w-[520px] border-collapse border-2 border-[#0F172A] text-left" data-testid="table-eirw-matrix">
         <thead>
           <tr className="bg-[#F1F5F9]">
-            <th className="w-20 border border-[#0F172A] px-3 py-2 font-heading text-sm font-bold">Element</th>
-            {QUANTITIES.map((q) => (
-              <th key={q} className="border border-[#0F172A] px-3 py-2 text-center" data-testid={`column-header-${q}`}>
-                <span className="font-heading text-lg font-bold">{HEADERS[q].sym}</span>
-                <span className="block text-xs font-medium text-[#475569]">
-                  {HEADERS[q].label} ({HEADERS[q].unit})
-                </span>
+            <th className="w-28 border border-[#0F172A] px-3 py-2" aria-label="Quantity" />
+            {ELEMENTS.map((el) => (
+              <th
+                key={el}
+                className={cn("border border-[#0F172A] px-3 py-2 text-center font-heading text-lg font-bold", el === "Total" && "border-l-2")}
+                data-testid={`column-header-${el}`}
+              >
+                {el}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {ELEMENTS.map((el) => (
-            <tr key={el} className={cn(el === "Total" && "border-t-2 border-[#0F172A] bg-[#F8FAFC]")}>
-              <th scope="row" className="border border-[#0F172A] px-3 py-2 font-heading text-base font-bold" data-testid={`row-label-${el}`}>
-                {el === "Total" ? "Total" : el}
+          {QUANTITIES.map((q) => (
+            <tr key={q}>
+              <th scope="row" className="border border-[#0F172A] bg-[#F1F5F9] px-3 py-2" data-testid={`row-label-${q}`}>
+                <span className="font-heading text-lg font-bold">{HEADERS[q].sym}</span>
+                <span className="block text-xs font-medium text-[#475569]">
+                  {HEADERS[q].label} ({HEADERS[q].unit})
+                </span>
               </th>
-              {QUANTITIES.map((q) => {
+              {ELEMENTS.map((el) => {
                 const key = cellKey(q, el);
                 const exp = expected(puzzle, q, el);
                 if (isGiven(q, el)) {
                   return (
-                    <td key={q} className="border border-[#0F172A] bg-[#EFF6FF] px-3 py-2 text-center" data-testid={`given-${key}`}>
+                    <td
+                      key={el}
+                      className={cn("border border-[#0F172A] bg-[#EFF6FF] px-3 py-2 text-center", el === "Total" && "border-l-2")}
+                      data-testid={`given-${key}`}
+                    >
                       <span className="font-mono text-base font-semibold text-[#1E40AF]">{fmt(exp)}</span>
-                      <span className="ml-1 text-[10px] font-semibold uppercase tracking-wider text-[#1E40AF]/70">given</span>
+                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#1E40AF]/70">given</span>
                     </td>
                   );
                 }
                 const status = results?.[key];
                 return (
-                  <td key={q} className="border border-[#0F172A] p-1.5 align-top">
+                  <td key={el} className={cn("border border-[#0F172A] p-1.5 align-top", el === "Total" && "border-l-2")}>
                     <div className="relative">
                       <input
                         type="text"

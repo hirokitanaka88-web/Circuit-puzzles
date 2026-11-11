@@ -81,12 +81,12 @@ export const SAMPLE_PUZZLE: Puzzle = {
       "work": "E2 = I2 × R2 = 1 × 25 = 25 V;  E3 = I3 × R3 = 1 × 5 = 5 V"
     },
     {
-      "title": "9. Power (W = E × I)",
-      "work": "W1 = 90 W;  W2 = 25 W;  W3 = 5 W;  W4 = 60 W"
+      "title": "9. Power (P = E × I)",
+      "work": "P1 = 90 W;  P2 = 25 W;  P3 = 5 W;  P4 = 60 W"
     },
     {
       "title": "10. Total power (check)",
-      "work": "WT = ET × IT = 60 × 3 = 180 W  =  W1 + W2 + W3 + W4"
+      "work": "PT = ET × IT = 60 × 3 = 180 W  =  P1 + P2 + P3 + P4"
     }
   ]
 };

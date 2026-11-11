@@ -12,7 +12,7 @@ Source E → R1 (series) → parallel bank [upper branch: R2 + R3 in series | lo
 
 ## Frontend (`/`)
 - SVG schematic with labels R1–R4 + values and E_T.
-- Answer table 5 rows (R1, R2, R3, R4, Total) × 4 cols (E, I, R, W). Given cells (read-only): R of R1–R4, E of Total. 15 input cells, testids `input-{Q}-{Element}` e.g. `input-I-Total`.
+- Answer table rows E, I, R, P (power, W) on the left × columns R1, R2, R3, R4, Total (testid keys still use W for power). Given cells (read-only): R of R1–R4, E of Total. 15 input cells, testids `input-{Q}-{Element}` e.g. `input-I-Total`.
 - Check Answers: ±1% tolerance; marks correct (green ✓) / incorrect or blank (red ✕); summary `validation-summary-badge` "x / 15 correct".
 - Reveal Solution: shows `worked-solution-card` (10 steps) and the correct value under each input.
 - Clear resets inputs; New Puzzle fetches a fresh puzzle.

@@ -87,10 +87,10 @@ def _steps(r1: int, r2: int, r3: int, r4: int, s: dict) -> list[SolutionStep]:
                      work=f"I2 = I3 = Ep ÷ R2,3 = {f(s['ep'])} ÷ {f(s['r23'])} = {f(s['i23'])} A;  I4 = Ep ÷ R4 = {f(s['ep'])} ÷ {r4} = {f(s['i4'])} A"),
         SolutionStep(title="8. Voltage drops in the upper branch",
                      work=f"E2 = I2 × R2 = {f(s['i23'])} × {r2} = {f(rows['R2'][0])} V;  E3 = I3 × R3 = {f(s['i23'])} × {r3} = {f(rows['R3'][0])} V"),
-        SolutionStep(title="9. Power (W = E × I)",
-                     work=f"W1 = {f(w['R1'])} W;  W2 = {f(w['R2'])} W;  W3 = {f(w['R3'])} W;  W4 = {f(w['R4'])} W"),
+        SolutionStep(title="9. Power (P = E × I)",
+                     work=f"P1 = {f(w['R1'])} W;  P2 = {f(w['R2'])} W;  P3 = {f(w['R3'])} W;  P4 = {f(w['R4'])} W"),
         SolutionStep(title="10. Total power (check)",
-                     work=f"WT = ET × IT = {f(s['e'])} × {f(rows['Total'][1])} = {f(w['Total'])} W  =  W1 + W2 + W3 + W4"),
+                     work=f"PT = ET × IT = {f(s['e'])} × {f(rows['Total'][1])} = {f(w['Total'])} W  =  P1 + P2 + P3 + P4"),
     ]
 
 
