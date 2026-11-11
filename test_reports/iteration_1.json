@@ -1,0 +1,60 @@
+{
+  "iteration": 1,
+  "summary": "All 6 acceptance criteria exercised: 1 backend test file (4 tests) + 6 named browser checks. All passed; two initial browser runs were flaky due to rapid back-to-back test-tool runs sharing one browser profile/localStorage, both passed cleanly on rerun (isolated) and are classified flaky, not app bugs.",
+  "passed": 7,
+  "failed": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Checking still correct for all three designs",
+      "name": "test_tscheck_puzzle_generation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET /api/puzzles/new?topology={series_parallel,parallel_branch,series_parallel_series} -> 200; each solution row satisfies E=I*R and P=E*I within 1% tolerance; given_cells reference non-null given values. GET ?topology=tscheck-not-a-topology -> 422. 4 passed in 0.71s."
+    },
+    {
+      "criterion": "Bug fix: entries persist after leaving and returning",
+      "name": "entries-persist-after-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Typed into 2 inputs, reload kept same data-topology and same values; opened a second page in same context -> same topology and same values shown. First attempt was flaky (topology mismatch after reload) due to overlapping test runs sharing localStorage; passed on 2 clean reruns, including once on the preview URL (entries-persist-preview-url)."
+    },
+    {
+      "criterion": "Check results and revealed solution persist",
+      "name": "check-and-reveal-persist-after-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Check Answers -> validation-summary-badge + input data-status set; Reveal Solution -> worked-solution-card visible; after reload all three (badge text, data-status, worked-solution-card) unchanged."
+    },
+    {
+      "criterion": "Puzzle does not change on its own",
+      "name": "puzzle-stable-across-reload-and-visibility",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "3x reload kept identical data-topology; simulated document visibilitychange hidden->visible left data-topology unchanged."
+    },
+    {
+      "criterion": "New Puzzle replaces and clears",
+      "name": "new-puzzle-replaces-and-clears",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "After filling + checking, btn-new-puzzle produced a different data-topology, cleared the input and removed validation-summary-badge; reload after that kept the NEW topology."
+    },
+    {
+      "criterion": "Clear empties entries persistently",
+      "name": "clear-empties-persistently",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "btn-clear-inputs emptied 2 filled inputs; reload kept same topology and both inputs still empty."
+    },
+    {
+      "criterion": "Checking still correct for all three designs",
+      "name": "checking-correct-for-all-designs",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Captured live GET /api/puzzles/new network responses while cycling New Puzzle; filled all 15 non-given inputs with the exact solution values for each of series_parallel, parallel_branch and series_parallel_series; validation-summary-badge showed '15 / 15' for all three."
+    }
+  ]
+}

@@ -1,39 +1,45 @@
-import { useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { BookOpen, CheckCheck, Eraser, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { apiGet } from "@/lib/api";
 import type { Element, Puzzle, Quantity } from "@/types/puzzle";
 import { SAMPLE_PUZZLE } from "@/lib/samplePuzzle";
 import { TOLERANCE, cellKey, checkAnswers } from "@/lib/circuit";
 import type { Answers, Results } from "@/lib/circuit";
+import { loadWorksheet, saveWorksheet } from "@/lib/worksheetStorage";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import Schematic from "@/components/circuit/Schematic";
 import AnswerTable from "@/components/circuit/AnswerTable";
 import WorkedSolution from "@/components/circuit/WorkedSolution";
 
+const fetchPuzzle = (exclude?: string) =>
+  apiGet<Puzzle>(`/puzzles/new${exclude ? `?exclude=${exclude}` : ""}`);
+
 export default function Home() {
-  const qc = useQueryClient();
-  // New Puzzle always switches to a different circuit design than the one on screen.
-  const lastTopology = useRef<string | null>(null);
-  const { data, isError, isFetching } = useQuery({
-    queryKey: ["puzzle"],
-    queryFn: async () => {
-      const qs = lastTopology.current ? `?exclude=${lastTopology.current}` : "";
-      const p = await apiGet<Puzzle>(`/puzzles/new${qs}`);
-      lastTopology.current = p.topology;
-      return p;
-    },
+  // The current puzzle and the learner's work are restored from this device's storage,
+  // so leaving the tab, reloading or locking the phone never loses them.
+  const [saved] = useState(loadWorksheet);
+  const [current, setCurrent] = useState<Puzzle | null>(saved?.puzzle ?? null);
+  const [answers, setAnswers] = useState<Answers>(saved?.answers ?? {});
+  const [results, setResults] = useState<Results | null>(saved?.results ?? null);
+  const [revealed, setRevealed] = useState(saved?.revealed ?? false);
+
+  // Only fetch a first puzzle when nothing was saved.
+  const first = useQuery({
+    queryKey: ["puzzle", "first"],
+    queryFn: () => fetchPuzzle(),
+    enabled: current === null,
     staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnWindowFocus: false,
     retry: 1,
   });
   // Fall back to a bundled sample so the worksheet still works without a backend.
-  const puzzle = isError || !data ? SAMPLE_PUZZLE : data;
-  const loading = isFetching && !data;
-
-  const [answers, setAnswers] = useState<Answers>({});
-  const [results, setResults] = useState<Results | null>(null);
-  const [revealed, setRevealed] = useState(false);
+  const puzzle = current ?? first.data ?? SAMPLE_PUZZLE;
+  const isError = current === null && first.isError;
+  const loading = current === null && first.isFetching;
 
   const resetWork = () => {
     setAnswers({});
@@ -41,10 +47,22 @@ export default function Home() {
     setRevealed(false);
   };
 
-  const newPuzzle = async () => {
-    resetWork();
-    await qc.refetchQueries({ queryKey: ["puzzle"] });
-  };
+  // New Puzzle always switches to a different circuit design than the one on screen.
+  const next = useMutation({
+    mutationFn: () => fetchPuzzle(puzzle.topology),
+    onSuccess: (p) => {
+      setCurrent(p);
+      resetWork();
+    },
+    onError: () => toast.error("Couldn't load a new puzzle. Check your connection and try again."),
+  });
+  const isFetching = loading || next.isPending;
+  const newPuzzle = () => next.mutate();
+
+  useEffect(() => {
+    if (puzzle.id === SAMPLE_PUZZLE.id) return; // never pin the offline sample
+    saveWorksheet({ puzzle, answers, results, revealed });
+  }, [puzzle, answers, results, revealed]);
 
   const onChange = (q: Quantity, el: Element, value: string) => {
     setAnswers((a) => ({ ...a, [cellKey(q, el)]: value }));
@@ -61,6 +79,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:px-6 sm:py-10">
+      <Toaster />
       <div className="mx-auto max-w-4xl">
         <article className="rounded-sm border border-[#CBD5E1] bg-white font-serif text-[#1a1a1a] shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
           <h1 className="sr-only" data-testid="app-title">Combination Circuit Practice</h1>

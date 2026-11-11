@@ -19,3 +19,4 @@ Single-page electrician-training worksheet. No auth, no DB persistence.
 - Reveal Solution: shows `worked-solution-card` (10 steps) and the correct value under each input.
 - Clear resets inputs; New Puzzle fetches a fresh puzzle.
 - If backend unreachable, bundled sample puzzle (`src/lib/samplePuzzle.ts`, seed 6) is shown.
+- Persistence: current puzzle + answers + check results + revealed state are saved to localStorage (`combination-worksheet:v1`) on every change and restored on load — reload/tab switch keeps the same puzzle and entries. Only "New Puzzle" replaces the puzzle (and clears entries); "Clear" empties entries. The offline sample is never saved.
