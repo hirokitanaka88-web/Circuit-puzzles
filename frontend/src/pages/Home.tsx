@@ -56,32 +56,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-4xl">
         <article className="rounded-sm border border-[#CBD5E1] bg-white font-serif text-[#1a1a1a] shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
-          {/* Worksheet header, printed-assignment style */}
-          <header className="px-5 pt-6 sm:px-10 sm:pt-9">
-            <div className="flex items-start justify-between gap-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#475569] underline underline-offset-4" data-testid="worksheet-subtitle">
-                Electrical Training · Practice Worksheet
-              </p>
-              <p className="text-xs text-[#475569]" data-testid="puzzle-number">
-                No. <span className="font-semibold text-[#1a1a1a]">{puzzle.id.slice(0, 6).toUpperCase()}</span>
-              </p>
-            </div>
-            <h1 className="mt-6 text-xl font-bold sm:text-2xl" data-testid="app-title">
-              Combination Assignment
-            </h1>
-            <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-base font-bold sm:grid-cols-[2fr_1fr_1fr]">
-              {(["Name", "Class", "Date"] as const).map((f) => (
-                <label key={f} className="flex min-w-0 items-end gap-2">
-                  {f}:
-                  <input
-                    className="h-7 min-w-0 flex-1 border-0 border-b border-[#1a1a1a] bg-transparent px-1 font-serif text-base font-normal outline-none focus:border-[#1E3A8A]"
-                    data-testid={`worksheet-${f.toLowerCase()}-input`}
-                    aria-label={f}
-                  />
-                </label>
-              ))}
-            </div>
-          </header>
+          <h1 className="sr-only" data-testid="app-title">Combination Circuit Practice</h1>
 
           <div className="space-y-6 px-5 py-6 sm:px-10 sm:py-8">
             <p className="text-base sm:pl-4" data-testid="instructions">
