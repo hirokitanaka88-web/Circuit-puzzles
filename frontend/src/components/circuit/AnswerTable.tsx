@@ -38,7 +38,7 @@ export default function AnswerTable({ puzzle, answers, results, revealed, onChan
               {COLUMNS.map((el) => {
                 const key = cellKey(q, el);
                 const exp = expected(puzzle, q, el);
-                if (isGiven(q, el)) {
+                if (isGiven(puzzle, q, el)) {
                   return (
                     <td key={el} className="border border-[#1a1a1a] px-2 py-2" data-testid={`given-${key}`}>
                       <span className="flex items-baseline gap-1">

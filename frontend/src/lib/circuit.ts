@@ -11,9 +11,9 @@ export type Results = Partial<Record<CellKey, CellStatus>>;
 
 export const cellKey = (q: Quantity, el: Element): CellKey => `${q}-${el}`;
 
-/** Given cells: each resistor's R and the total (source) E. */
-export function isGiven(q: Quantity, el: Element): boolean {
-  return (q === "R" && el !== "Total") || (q === "E" && el === "Total");
+/** Given cells come from the puzzle (e.g. each R plus E_T, or each R plus P4). */
+export function isGiven(p: Puzzle, q: Quantity, el: Element): boolean {
+  return p.given_cells.includes(cellKey(q, el));
 }
 
 export function fmt(n: number): string {
@@ -29,7 +29,7 @@ export function checkAnswers(p: Puzzle, answers: Answers): Results {
   const results: Results = {};
   for (const el of ELEMENTS) {
     for (const q of QUANTITIES) {
-      if (isGiven(q, el)) continue;
+      if (isGiven(p, q, el)) continue;
       const key = cellKey(q, el);
       const raw = (answers[key] ?? "").trim().replace(",", ".");
       if (raw === "") {

@@ -1,50 +1,59 @@
-// Offline sample (backend seed=6) shown only if /api is unreachable, e.g. static preview.
+// Offline sample (backend seed=6, series_parallel) shown only if /api is unreachable, e.g. static preview.
 import type { Puzzle } from "@/types/puzzle";
 
 export const SAMPLE_PUZZLE: Puzzle = {
   "id": "offline-sample",
+  "topology": "series_parallel",
   "given": {
-    "E": 60.0,
     "R1": 10.0,
     "R2": 25.0,
     "R3": 5.0,
-    "R4": 15.0
+    "R4": 15.0,
+    "E": 180.0,
+    "P4": null
   },
+  "given_cells": [
+    "R-R1",
+    "R-R2",
+    "R-R3",
+    "R-R4",
+    "E-Total"
+  ],
   "solution": [
     {
       "element": "R1",
-      "E": 30.0,
-      "I": 3.0,
+      "E": 90.0,
+      "I": 9.0,
       "R": 10.0,
-      "W": 90.0
+      "W": 810.0
     },
     {
       "element": "R2",
-      "E": 25.0,
-      "I": 1.0,
+      "E": 75.0,
+      "I": 3.0,
       "R": 25.0,
-      "W": 25.0
+      "W": 225.0
     },
     {
       "element": "R3",
-      "E": 5.0,
-      "I": 1.0,
+      "E": 15.0,
+      "I": 3.0,
       "R": 5.0,
-      "W": 5.0
+      "W": 45.0
     },
     {
       "element": "R4",
-      "E": 30.0,
-      "I": 2.0,
+      "E": 90.0,
+      "I": 6.0,
       "R": 15.0,
-      "W": 60.0
+      "W": 540.0
     },
     {
       "element": "Total",
-      "E": 60.0,
-      "I": 3.0,
+      "E": 180.0,
+      "I": 9.0,
       "R": 20.0,
-      "W": 180.0
+      "W": 1620.0
     }
   ],
   "steps": [
@@ -62,31 +71,31 @@ export const SAMPLE_PUZZLE: Puzzle = {
     },
     {
       "title": "4. Total current (Ohm's law)",
-      "work": "IT = ET ÷ RT = 60 ÷ 20 = 3 A  (IT flows through R1, so I1 = 3 A)"
+      "work": "IT = ET ÷ RT = 180 ÷ 20 = 9 A  (IT flows through R1, so I1 = 9 A)"
     },
     {
       "title": "5. Voltage drop across R1",
-      "work": "E1 = I1 × R1 = 3 × 10 = 30 V"
+      "work": "E1 = I1 × R1 = 9 × 10 = 90 V"
     },
     {
       "title": "6. Voltage across the parallel bank",
-      "work": "Ep = ET − E1 = 60 − 30 = 30 V  (so E4 = 30 V)"
+      "work": "Ep = ET − E1 = 180 − 90 = 90 V  (so E4 = 90 V)"
     },
     {
       "title": "7. Branch currents",
-      "work": "I2 = I3 = Ep ÷ R2,3 = 30 ÷ 30 = 1 A;  I4 = Ep ÷ R4 = 30 ÷ 15 = 2 A"
+      "work": "I2 = I3 = Ep ÷ R2,3 = 90 ÷ 30 = 3 A;  I4 = Ep ÷ R4 = 90 ÷ 15 = 6 A"
     },
     {
       "title": "8. Voltage drops in the upper branch",
-      "work": "E2 = I2 × R2 = 1 × 25 = 25 V;  E3 = I3 × R3 = 1 × 5 = 5 V"
+      "work": "E2 = I2 × R2 = 3 × 25 = 75 V;  E3 = I3 × R3 = 3 × 5 = 15 V"
     },
     {
       "title": "9. Power (P = E × I)",
-      "work": "P1 = 90 W;  P2 = 25 W;  P3 = 5 W;  P4 = 60 W"
+      "work": "P1 = 810 W;  P2 = 225 W;  P3 = 45 W;  P4 = 540 W"
     },
     {
       "title": "10. Total power (check)",
-      "work": "PT = ET × IT = 60 × 3 = 180 W  =  P1 + P2 + P3 + P4"
+      "work": "PT = ET × IT = 180 × 9 = 1620 W  =  P1 + P2 + P3 + P4"
     }
   ]
 };

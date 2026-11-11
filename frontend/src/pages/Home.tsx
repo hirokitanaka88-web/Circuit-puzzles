@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, CheckCheck, Eraser, RefreshCw } from "lucide-react";
 import { apiGet } from "@/lib/api";
@@ -13,9 +13,16 @@ import WorkedSolution from "@/components/circuit/WorkedSolution";
 
 export default function Home() {
   const qc = useQueryClient();
+  // New Puzzle always switches to a different circuit design than the one on screen.
+  const lastTopology = useRef<string | null>(null);
   const { data, isError, isFetching } = useQuery({
     queryKey: ["puzzle"],
-    queryFn: () => apiGet<Puzzle>("/puzzles/new"),
+    queryFn: async () => {
+      const qs = lastTopology.current ? `?exclude=${lastTopology.current}` : "";
+      const p = await apiGet<Puzzle>(`/puzzles/new${qs}`);
+      lastTopology.current = p.topology;
+      return p;
+    },
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     retry: 1,
@@ -65,7 +72,7 @@ export default function Home() {
 
             {/* Schematic */}
             <figure className={loading ? "opacity-40 transition-opacity duration-200" : "transition-opacity duration-200"}>
-              <Schematic given={puzzle.given} />
+              <Schematic topology={puzzle.topology} given={puzzle.given} />
             </figure>
 
             {/* Answer table */}
