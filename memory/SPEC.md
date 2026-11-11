@@ -1,0 +1,19 @@
+# Combination Circuits — Practice Worksheet (SPEC)
+
+Single-page electrician-training worksheet. No auth, no DB persistence.
+
+## Circuit topology
+Source E → R1 (series) → parallel bank [upper branch: R2 + R3 in series | lower branch: R4] → back to source.
+
+## Backend
+- `GET /api/puzzles/new?seed=<int optional>` → `Puzzle { id, given{E,R1..R4}, solution[ {element: R1|R2|R3|R4|Total, E,I,R,W} ], steps[{title, work}] }`
+- Generator (`backend/routers/puzzles.py`) picks nice whole resistor values + source E so every answer is exact to ≤2 decimals. `seed` makes it deterministic (seed=6 → E=60, R1=10, R2=25, R3=5, R4=15).
+- Non-int seed → 422.
+
+## Frontend (`/`)
+- SVG schematic with labels R1–R4 + values and E_T.
+- Answer table 5 rows (R1, R2, R3, R4, Total) × 4 cols (E, I, R, W). Given cells (read-only): R of R1–R4, E of Total. 15 input cells, testids `input-{Q}-{Element}` e.g. `input-I-Total`.
+- Check Answers: ±1% tolerance; marks correct (green ✓) / incorrect or blank (red ✕); summary `validation-summary-badge` "x / 15 correct".
+- Reveal Solution: shows `worked-solution-card` (10 steps) and the correct value under each input.
+- Clear resets inputs; New Puzzle fetches a fresh puzzle.
+- If backend unreachable, bundled sample puzzle (`src/lib/samplePuzzle.ts`, seed 6) is shown.

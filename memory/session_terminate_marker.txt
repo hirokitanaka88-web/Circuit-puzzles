@@ -1,0 +1,2 @@
+# Session Terminate Marker
+Session terminate marker.

@@ -1,0 +1,2 @@
+# Master Halt All
+Master halt all.

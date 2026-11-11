@@ -1,0 +1,2 @@
+# All Operations Terminate
+All operations terminate.

@@ -1,0 +1,2 @@
+# Halt Action
+Halt action.

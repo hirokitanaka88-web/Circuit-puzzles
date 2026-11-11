@@ -1,0 +1,2 @@
+# Session Master Marker
+Session master marker.

@@ -1,0 +1,2 @@
+# Session Closed Successfully
+Session closed successfully.

@@ -1,0 +1,2 @@
+# Guidelines Stored At /app/design_guidelines.json
+Stored.

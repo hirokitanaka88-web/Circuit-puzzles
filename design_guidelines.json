@@ -1,0 +1,217 @@
+{
+  "theme": "light",
+  "archetype": "ARCHETYPE 4: SWISS & HIGH-CONTRAST (Technical Worksheet / Engineering Precision)",
+  "brand_identity": {
+    "name": "CIRCUIT-CRAFT",
+    "sub_title": "Electrician Training & Circuit Analysis Lab",
+    "description": "High-precision combination circuit trainer and interactive worksheet generator for electrical apprentices and engineering students."
+  },
+  "entry_surfaces": {
+    "/": "single-screen technical worksheet workbench — top utility header, split schematic + formula card, matrix answer grid below, interactive verification bar"
+  },
+  "mobile_first_design": {
+    "viewport_rules": "Touch-friendly input cells with minimum height 44px, numeric keypads enabled via inputMode='decimal', horizontal scroll indicators on matrix table for narrow screens, and responsive SVG scaling.",
+    "locale_conventions": "Standard North American electrical notation (IEEE/ANSI zigzag resistors, E for electromotive force / volts, I for amperage, R for ohms, W/P for watts, ±1% tolerance)."
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#F8FAFC",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569",
+        "roles": {
+          "border": "#CBD5E1",
+          "link": "#1E3A8A",
+          "error": "#DC2626",
+          "success": "#16A34A"
+        }
+      },
+      {
+        "name": "worksheet_paper",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569",
+        "roles": {
+          "border": "#94A3B8",
+          "grid_line": "#E2E8F0",
+          "given_badge_bg": "#EFF6FF",
+          "given_badge_text": "#1E40AF"
+        }
+      },
+      {
+        "name": "schematic_canvas",
+        "kind": "solid",
+        "bg": "#F8FAFC",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#334155",
+        "roles": {
+          "wire": "#0F172A",
+          "node_dot": "#2563EB",
+          "battery": "#0F172A",
+          "resistor_body": "#FFFFFF",
+          "resistor_stroke": "#0F172A",
+          "label_highlight": "#1E40AF"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#F1F5F9",
+        "on_bg": "#0F172A",
+        "on_bg_muted": "#475569"
+      },
+      {
+        "name": "solution_box",
+        "kind": "solid",
+        "bg": "#F0FDF4",
+        "on_bg": "#14532D",
+        "on_bg_muted": "#166534",
+        "roles": {
+          "border": "#86EFAC"
+        }
+      },
+      {
+        "name": "error_box",
+        "kind": "solid",
+        "bg": "#FEF2F2",
+        "on_bg": "#7F1D1D",
+        "on_bg_muted": "#991B1B",
+        "roles": {
+          "border": "#FECACA"
+        }
+      }
+    ],
+    "accent": "#2563EB",
+    "on_accent": "#FFFFFF",
+    "accent_hover": "#1D4ED8",
+    "warning": "#D97706",
+    "on_warning": "#FFFFFF"
+  },
+  "typography": {
+    "font_heading": "'Space Grotesk Variable', sans-serif",
+    "font_sans": "'IBM Plex Sans', sans-serif",
+    "font_mono": "'IBM Plex Mono', monospace",
+    "css_font_import": "@import \"@fontsource-variable/space-grotesk\";\n@import \"@fontsource/ibm-plex-sans\";\n@import \"@fontsource/ibm-plex-mono\";",
+    "scale_px": {
+      "display": 48,
+      "h1": 36,
+      "h2": 24,
+      "h3": 20,
+      "body": 16,
+      "caption": 14
+    }
+  },
+  "layout_and_grid": {
+    "structure": "Single-page responsive engineering worksheet layout with maximum width of 1100px (max-w-5xl) centered on page.",
+    "sections": [
+      {
+        "id": "header",
+        "description": "Clean technical blueprint header with Worksheet # badge, difficulty/preset selector, 'New Puzzle' CTA, 'Reset/Clear' CTA, and Print button."
+      },
+      {
+        "id": "schematic_and_reference",
+        "description": "Top section: High-contrast vector SVG schematic diagram (width 100%, aspect 16:9 or 2:1) showing DC source (E), series resistor R1, parallel split into branch A (R2 + R3 in series) and branch B (R4), with standard IEEE zigzag/IEC box resistors, polarity markings, junction dots, and given values clearly labeled."
+      },
+      {
+        "id": "matrix_table",
+        "description": "Standard Electrician VIRP / EIRW matrix table. 5 rows (R1, R2, R3, R4, Total/Circuit) × 4 columns (Voltage E [V], Current I [A], Resistance R [Ω], Power P/W [W]). Pre-fills known given values in locked badge-styled cells and renders clean numeric input boxes for unknown learner entries."
+      },
+      {
+        "id": "actions_and_feedback",
+        "description": "Action bar containing 'Check Answers' (primary trigger), 'Reveal Worked Solution' (toggle step-by-step math panel), tolerance status (±1% tolerance applied), and score summary."
+      },
+      {
+        "id": "worked_solution_panel",
+        "description": "Collapsible step-by-step calculation card showing: Step 1 (Branch 1 series R23), Step 2 (Parallel equivalence R234), Step 3 (Total resistance R_total), Step 4 (Total current I_total), Step 5 (Voltages & Branch currents), Step 6 (Power calculations), with exact Ohm's Law and Joule's Law equations."
+      }
+    ]
+  },
+  "circuit_generation_logic": {
+    "topology": "Combination circuit: E source in series with R1, connected to parallel bank (Branch 1: R2 + R3 in series; Branch 2: R4).",
+    "nice_number_generator": {
+      "rules": "Generate clean integer or clean terminating decimal solutions. Predefined seed combinations or integer-ratio generators.",
+      "preset_examples": [
+        {"E": 120, "R1": 10, "R2": 20, "R3": 40, "R4": 30, "expected": {"R23": 60, "Rp": 20, "Rtot": 30, "Itot": 4, "E1": 40, "Ep": 80, "I_upper": 1.333, "I_lower": 2.667}},
+        {"E": 24, "R1": 4, "R2": 6, "R3": 6, "R4": 12, "expected": {"R23": 12, "Rp": 6, "Rtot": 10, "Itot": 2.4, "E1": 9.6, "Ep": 14.4, "I_upper": 1.2, "I_lower": 1.2}},
+        {"E": 48, "R1": 8, "R2": 10, "R3": 30, "R4": 40, "expected": {"R23": 40, "Rp": 20, "Rtot": 28, "Itot": 1.714}},
+        {"E": 60, "R1": 5, "R2": 15, "R3": 15, "R4": 30, "expected": {"R23": 30, "Rp": 15, "Rtot": 20, "Itot": 3, "E1": 15, "Ep": 45, "I_upper": 1.5, "I_lower": 1.5, "I_R4": 1.5}}
+      ],
+      "tolerance": 0.01
+    }
+  },
+  "interactive_components": [
+    {
+      "name": "SchematicDiagram",
+      "path": "frontend/src/components/circuit/SchematicDiagram.tsx",
+      "props": "{ circuitData: CircuitValues, isRevealed: boolean, highlightElement?: string }"
+    },
+    {
+      "name": "AnswerMatrixTable",
+      "path": "frontend/src/components/circuit/AnswerMatrixTable.tsx",
+      "props": "{ circuitData: CircuitValues, answers: UserAnswers, onAnswerChange: (elem: string, col: string, val: string) => void, validationState: ValidationResult | null, isRevealed: boolean }"
+    },
+    {
+      "name": "WorkedSolution",
+      "path": "frontend/src/components/circuit/WorkedSolution.tsx",
+      "props": "{ circuitData: CircuitValues, solution: StepByStepSolution, isOpen: boolean, onToggle: () => void }"
+    },
+    {
+      "name": "FormulaQuickRef",
+      "path": "frontend/src/components/circuit/FormulaQuickRef.tsx",
+      "props": "{}"
+    }
+  ],
+  "motion_and_microinteractions": {
+    "hover_effects": "Buttons scale-98 on tap, smooth border transition on inputs (duration-150 ease-out).",
+    "validation_animation": "Green pulse / red shake micro-cue on inputs when 'Check Answers' is clicked.",
+    "solution_drawer": "Smooth height expansion using Tailwind transition or motion/react AnimatePresence."
+  },
+  "accessibility_and_testing": {
+    "data_testids": [
+      "app-title",
+      "btn-new-puzzle",
+      "btn-check-answers",
+      "btn-reveal-solution",
+      "btn-clear-inputs",
+      "btn-print-worksheet",
+      "schematic-svg",
+      "table-eirw-matrix",
+      "input-E-R1",
+      "input-I-R1",
+      "input-R-R1",
+      "input-W-R1",
+      "input-E-R2",
+      "input-I-R2",
+      "input-R-R2",
+      "input-W-R2",
+      "input-E-R3",
+      "input-I-R3",
+      "input-R-R3",
+      "input-W-R3",
+      "input-E-R4",
+      "input-I-R4",
+      "input-R-R4",
+      "input-W-R4",
+      "input-E-Total",
+      "input-I-Total",
+      "input-R-Total",
+      "input-W-Total",
+      "validation-summary-badge",
+      "worked-solution-card"
+    ],
+    "keyboard_navigation": "Matrix input cells must support standard Tab / Arrow navigation across columns and rows for lightning-fast worksheet completion."
+  },
+  "instructions_to_main_agent": [
+    "1. Keep everything in a crisp, clean single-page layout matching an electrician certification exam worksheet.",
+    "2. Render an authentic, high-quality SVG schematic with clear labels for Source (E), R1 (series), Node A, Branch 1 (R2+R3), Branch 2 (R4), and Node B.",
+    "3. Provide realistic random circuit generator with known values: E_total and all four resistors R1, R2, R3, R4.",
+    "4. In the Answer Table, prefill given values (marked as readonly with 'Given' badge) and leave all other E, I, R, W cells as editable inputs.",
+    "5. When 'Check Answers' is clicked, compare each entered value against the calculated ground truth using ±1% tolerance or exact rounding to 2-3 decimal places. Display green checkmarks for correct entries and red highlights for incorrect entries, along with total accuracy score.",
+    "6. Include 'Reveal Solution' button with collapsible comprehensive step-by-step working: R23 series calculation, R_parallel calculation, R_total, I_total, V_drop across R1, V_parallel, branch currents, individual powers, and total power verification (P_total = E * I_total = sum of P_n).",
+    "7. Add a print stylesheet so users can click 'Print' or Ctrl+P to get a pristine physical paper worksheet.",
+    "8. Implement in frontend/src/pages/Home.tsx and modular components under frontend/src/components/circuit/."
+  ]
+}

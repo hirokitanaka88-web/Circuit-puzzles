@@ -1,0 +1,2 @@
+# Session Closed Marker
+Session closed marker.
