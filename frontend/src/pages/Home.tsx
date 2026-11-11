@@ -55,40 +55,49 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-4xl">
-        <article className="rounded-md border border-[#94A3B8] bg-white shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
-          {/* Worksheet header */}
-          <header className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-[#0F172A] px-5 pb-4 pt-5 sm:px-8 sm:pt-7">
-            <div>
-              <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#475569]" data-testid="worksheet-subtitle">
-                Electrical Theory · Practice Worksheet
+        <article className="rounded-sm border border-[#CBD5E1] bg-white font-serif text-[#1a1a1a] shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
+          {/* Worksheet header, printed-assignment style */}
+          <header className="px-5 pt-6 sm:px-10 sm:pt-9">
+            <div className="flex items-start justify-between gap-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#475569] underline underline-offset-4" data-testid="worksheet-subtitle">
+                Electrical Training · Practice Worksheet
               </p>
-              <h1 className="mt-1 font-heading text-2xl font-bold tracking-tight text-[#0F172A] sm:text-4xl" data-testid="app-title">
-                Combination Circuits
-              </h1>
+              <p className="text-xs text-[#475569]" data-testid="puzzle-number">
+                No. <span className="font-semibold text-[#1a1a1a]">{puzzle.id.slice(0, 6).toUpperCase()}</span>
+              </p>
             </div>
-            <div className="font-mono text-sm text-[#475569]" data-testid="puzzle-number">
-              Problem No. <span className="font-semibold text-[#0F172A]">{puzzle.id.slice(0, 6).toUpperCase()}</span>
+            <h1 className="mt-6 text-xl font-bold sm:text-2xl" data-testid="app-title">
+              Combination Assignment
+            </h1>
+            <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-base font-bold sm:grid-cols-[2fr_1fr_1fr]">
+              {(["Name", "Class", "Date"] as const).map((f) => (
+                <label key={f} className="flex min-w-0 items-end gap-2">
+                  {f}:
+                  <input
+                    className="h-7 min-w-0 flex-1 border-0 border-b border-[#1a1a1a] bg-transparent px-1 font-serif text-base font-normal outline-none focus:border-[#1E3A8A]"
+                    data-testid={`worksheet-${f.toLowerCase()}-input`}
+                    aria-label={f}
+                  />
+                </label>
+              ))}
             </div>
           </header>
 
-          <div className="space-y-6 px-5 py-6 sm:px-8 sm:py-8">
-            <p className="text-base leading-relaxed text-[#0F172A]" data-testid="instructions">
-              Using the given values, solve for the voltage (E), current (I), resistance (R) and power (W) of each
-              resistor and of the total circuit. Answers are accepted within ±{TOLERANCE * 100}%.
+          <div className="space-y-6 px-5 py-6 sm:px-10 sm:py-8">
+            <p className="text-base sm:pl-4" data-testid="instructions">
+              <span className="mr-4">1.</span>Solve for the missing values:
             </p>
 
             {/* Schematic */}
             <figure className={loading ? "opacity-40 transition-opacity duration-200" : "transition-opacity duration-200"}>
-              <div className="rounded-sm border border-[#E2E8F0] bg-[#FCFDFE] p-2 sm:p-4">
-                <Schematic given={puzzle.given} />
-              </div>
+              <Schematic given={puzzle.given} />
             </figure>
 
             {/* Answer table */}
             <AnswerTable puzzle={puzzle} answers={answers} results={results} revealed={revealed} onChange={onChange} />
 
             {/* Actions */}
-            <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-5 font-sans sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="lg"
@@ -134,7 +143,7 @@ export default function Home() {
             {results && (
               <div
                 className={
-                  "animate-in fade-in rounded-sm border px-4 py-3 font-mono text-sm duration-200 " +
+                  "animate-in fade-in rounded-sm border px-4 py-3 font-sans text-sm duration-200 " +
                   (correct === statuses.length
                     ? "border-[#86EFAC] bg-[#F0FDF4] text-[#14532D]"
                     : "border-[#FECACA] bg-[#FEF2F2] text-[#7F1D1D]")
@@ -142,7 +151,7 @@ export default function Home() {
                 data-testid="validation-summary-badge"
               >
                 <span className="font-semibold">
-                  {correct} / {statuses.length} correct
+                  {correct} / {statuses.length} correct (±{TOLERANCE * 100}%)
                 </span>
                 {correct === statuses.length
                   ? " — excellent, every value checks out."

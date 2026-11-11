@@ -11,7 +11,7 @@ Source E → R1 (series) → parallel bank [upper branch: R2 + R3 in series | lo
 - Non-int seed → 422.
 
 ## Frontend (`/`)
-- SVG schematic with labels R1–R4 + values and E_T.
+- Layout mirrors the user's printed "Combination Assignment" worksheet: serif (Lora) text, Name/Class/Date lines, "1. Solve for the missing values:", hexagon-shaped parallel bank, boxed values (e.g. "150Ω", source "60V" boxed beside battery). Table: Total column first then R1–R4, rows E, I, R, P; cells read "E1 = ___".
 - Answer table rows E, I, R, P (power, W) on the left × columns R1, R2, R3, R4, Total (testid keys still use W for power). Given cells (read-only): R of R1–R4, E of Total. 15 input cells, testids `input-{Q}-{Element}` e.g. `input-I-Total`.
 - Check Answers: ±1% tolerance; marks correct (green ✓) / incorrect or blank (red ✕); summary `validation-summary-badge` "x / 15 correct".
 - Reveal Solution: shows `worked-solution-card` (10 steps) and the correct value under each input.
