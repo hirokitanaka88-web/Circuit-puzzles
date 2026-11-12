@@ -1,5 +1,5 @@
-// Offline sample (backend seed=6, series_parallel) shown only if /api is unreachable, e.g. static preview.
-import type { Puzzle } from "@/types/puzzle";
+// Offline sample (backend seed=6, series_parallel) used only when /api is unreachable, e.g. static preview.
+import type { Puzzle, Reveal } from "@/types/puzzle";
 
 export const SAMPLE_PUZZLE: Puzzle = {
   "id": "offline-sample",
@@ -19,6 +19,10 @@ export const SAMPLE_PUZZLE: Puzzle = {
     "R-R4",
     "E-Total"
   ],
+  "issued_at": "2026-01-01T00:00:00Z"
+};
+
+export const SAMPLE_REVEAL: Reveal = {
   "solution": [
     {
       "element": "R1",

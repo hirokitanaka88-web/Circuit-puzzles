@@ -89,7 +89,7 @@ export default function FormulaWheelPanel() {
   return (
     <>
       <aside className="hidden lg:block" data-testid="formula-wheel-sidebar">
-        <div className="sticky top-6 rounded-sm border border-[#CBD5E1] bg-white p-4 shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
+        <div className="rounded-sm border border-[#CBD5E1] bg-white p-4 shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
           <h2 className="mb-2 font-serif text-base font-bold text-[#1a1a1a]">Formula Wheel</h2>
           <OhmsLawWheel />
         </div>

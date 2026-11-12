@@ -64,8 +64,12 @@ async def get_status_checks():
     return [StatusCheck(**status_check) for status_check in status_checks]
 
 from routers.puzzles import router as puzzles_router  # noqa: E402
+from routers.auth import router as auth_router  # noqa: E402
+from routers.leaderboard import router as leaderboard_router  # noqa: E402
 
 api_router.include_router(puzzles_router)
+api_router.include_router(auth_router)
+api_router.include_router(leaderboard_router)
 
 # Include the router in the main app
 app.include_router(api_router)

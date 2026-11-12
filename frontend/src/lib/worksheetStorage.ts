@@ -1,15 +1,17 @@
-import type { Puzzle } from "@/types/puzzle";
+import type { Puzzle, Reveal, ScoreResult } from "@/types/puzzle";
 import type { Answers, Results } from "@/lib/circuit";
 
 // Per-device persistence of the worksheet in progress (localStorage survives tab
-// switches, reloads and the phone sleeping; only closing/clearing site data resets it).
-const KEY = "combination-worksheet:v1";
+// switches, reloads and the phone sleeping; only clearing site data resets it).
+const KEY = "combination-worksheet:v2";
 
 export interface SavedWorksheet {
   puzzle: Puzzle;
   answers: Answers;
   results: Results | null;
-  revealed: boolean;
+  score: ScoreResult | null;
+  reveal: Reveal | null; // fetched solution (once revealed)
+  showSolution: boolean;
 }
 
 export function loadWorksheet(): SavedWorksheet | null {
@@ -17,8 +19,7 @@ export function loadWorksheet(): SavedWorksheet | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as SavedWorksheet;
-    // Drop anything saved by an older app version without the current puzzle shape.
-    if (!data?.puzzle?.topology || !Array.isArray(data.puzzle.given_cells)) return null;
+    if (!data?.puzzle?.issued_at || !Array.isArray(data.puzzle.given_cells)) return null;
     return data;
   } catch {
     return null;

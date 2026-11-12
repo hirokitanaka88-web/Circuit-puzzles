@@ -1,6 +1,6 @@
 import { Check, X } from "lucide-react";
-import type { Element, Puzzle, Quantity } from "@/types/puzzle";
-import { QUANTITIES, cellKey, expected, fmt, isGiven } from "@/lib/circuit";
+import type { Element, ElementValues, Puzzle, Quantity } from "@/types/puzzle";
+import { QUANTITIES, cellKey, fmt, givenValue, isGiven, solutionValue } from "@/lib/circuit";
 import type { Answers, Results } from "@/lib/circuit";
 import { cn } from "@/lib/utils";
 
@@ -24,11 +24,11 @@ interface Props {
   puzzle: Puzzle;
   answers: Answers;
   results: Results | null;
-  revealed: boolean;
+  solution: ElementValues[] | null; // shown under each cell once revealed
   onChange: (q: Quantity, el: Element, value: string) => void;
 }
 
-export default function AnswerTable({ puzzle, answers, results, revealed, onChange }: Props) {
+export default function AnswerTable({ puzzle, answers, results, solution, onChange }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[640px] table-fixed border-collapse border border-[#1a1a1a] font-serif text-[17px] text-[#1a1a1a]" data-testid="table-eirw-matrix">
@@ -37,14 +37,13 @@ export default function AnswerTable({ puzzle, answers, results, revealed, onChan
             <tr key={q} data-testid={`row-${q}`}>
               {COLUMNS.map((el) => {
                 const key = cellKey(q, el);
-                const exp = expected(puzzle, q, el);
                 if (isGiven(puzzle, q, el)) {
                   return (
                     <td key={el} className="border border-[#1a1a1a] px-2 py-2" data-testid={`given-${key}`}>
                       <span className="flex items-baseline gap-1">
                         <CellLabel q={q} el={el} />
                         <span className="font-semibold">
-                          {fmt(exp)} {UNIT[q]}
+                          {fmt(givenValue(puzzle, q, el))} {UNIT[q]}
                         </span>
                       </span>
                     </td>
@@ -87,9 +86,9 @@ export default function AnswerTable({ puzzle, answers, results, revealed, onChan
                         )}
                       </span>
                     </label>
-                    {revealed && (
+                    {solution && (
                       <div className="mt-0.5 text-right font-serif text-sm font-semibold text-[#166534]" data-testid={`solution-${key}`}>
-                        = {fmt(exp)} {UNIT[q]}
+                        = {fmt(solutionValue(solution, q, el))} {UNIT[q]}
                       </div>
                     )}
                   </td>

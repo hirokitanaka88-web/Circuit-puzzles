@@ -1,0 +1,109 @@
+{
+  "iteration": 2,
+  "summary": "New feature set (username+PIN auth, server-side scoring with time decay, reveal-forfeits, leaderboard, live timer, v2 persistence) exercised: 4 backend test files (8 tests incl. 1 updated pre-existing suite) + 1 updated old generation test + 8 named browser checks (one also re-run through the public preview URL). All 16 checks passed.",
+  "passed": 16,
+  "failed": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Username + PIN sign-in",
+      "name": "test_tscheck_auth_signin.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /auth/login new username -> 200 + session cookie; GET /auth/me -> username; same username wrong PIN -> 401; correct PIN -> 200; POST /auth/logout -> GET /auth/me -> null. 1 passed."
+    },
+    {
+      "criterion": "Username + PIN sign-in",
+      "name": "signin-pin-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "New username+PIN -> player-username shows name; reload keeps session; signout shows signin-form; existing username+wrong PIN -> signin-error visible (401); correct PIN signs back in."
+    },
+    {
+      "criterion": "Username + PIN sign-in",
+      "name": "signin-pin-flow-preview-url",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Same sign-in/reload/signout flow re-run against the public https preview URL (Secure session cookie confirmed working end-to-end)."
+    },
+    {
+      "criterion": "Server-scored first check with time decay",
+      "name": "test_tscheck_scoring_time_decay.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET /puzzles/new?seed=6&topology=series_parallel has no solution/steps fields; POST .../check with hand-solved values (E=180,R1=10,R2=25,R3=5,R4=15) -> correct=15, score.status=awarded, points=150 (15*10*1.0, <120s elapsed); second check -> already_locked, points still 150; GET /leaderboard shows the player at 150 pts / 1 puzzle."
+    },
+    {
+      "criterion": "Server-scored first check with time decay",
+      "name": "check-scores-and-locks",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Signed in, filled all 15 inputs, Check Answers -> score-message 'points added to the leaderboard'; second Check Answers -> score-message 'Score locked at N points'; puzzle-timer-note shows 'Locked'."
+    },
+    {
+      "criterion": "Partially-blank check asks for confirmation",
+      "name": "partial-blank-confirm-dialog",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Half the inputs left blank, Check Answers -> check-confirm-dialog opens; check-cancel-button closes it with no score-message; re-check + check-confirm-button closes dialog and scores (score-message appears)."
+    },
+    {
+      "criterion": "Reveal forfeits points",
+      "name": "test_tscheck_reveal_forfeits.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /puzzles/{id}/reveal on a fresh puzzle -> 200 with solution(5 rows)+steps; subsequent POST .../check with the correct hand-solved answers -> correct=15 but score.status=revealed, points=0; GET /leaderboard does not contain this player (0 scored puzzles)."
+    },
+    {
+      "criterion": "Reveal forfeits points",
+      "name": "reveal-forfeits-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Fresh puzzle, Reveal Solution -> reveal-confirm-dialog; reveal-confirm-button -> worked-solution-card + solution-* values visible; later Check Answers -> score-message 'solution was revealed'."
+    },
+    {
+      "criterion": "Not signed in",
+      "name": "test_tscheck_not_signed_in.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST .../check with no session cookie -> correct=15 (graded) but score.status=not_signed_in, points=0; signing in afterwards and checking the SAME puzzle id -> score.status=awarded, points=150; a further check -> already_locked at 150."
+    },
+    {
+      "criterion": "Not signed in",
+      "name": "not-signed-in-check-message",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Signed out, Check Answers grades (validation-summary-badge visible) and score-message reads 'Sign in...'; signing in and checking again -> score-message 'points added to the leaderboard'."
+    },
+    {
+      "criterion": "Leaderboard",
+      "name": "leaderboard-ranking",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "leaderboard-card visible pre- and post-signin; after a scored check the new player's username appears in the list; leaderboard-points-* values confirmed non-increasing (desc); at 390px viewport leaderboard-card remains visible and its bounding box sits below the worksheet table."
+    },
+    {
+      "criterion": "Timer",
+      "name": "puzzle-timer-display",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "puzzle-timer-clock visible and its text changes within 15s (counting up); puzzle-timer-note shows '... pts per correct box now'; New Puzzle resets puzzle-timer-clock to ~00:0x."
+    },
+    {
+      "criterion": "Persistence still works",
+      "name": "persistence-v2-after-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "localStorage key combination-worksheet:v2 present; typed values, Check Answers -> score-message; after reload: same given cell, same typed input value, identical score-message text, identical timer note (Locked state preserved)."
+    },
+    {
+      "criterion": "Checking still correct for all three designs (pre-existing, updated for new API contract)",
+      "name": "test_tscheck_puzzle_generation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Updated to match the new /puzzles/new contract (no solution/steps leaked) while still verifying Ohm's/power-law consistency via POST /puzzles/{id}/reveal for all 3 topologies; 422 on unknown topology. 8 passed (full suite)."
+    }
+  ]
+}

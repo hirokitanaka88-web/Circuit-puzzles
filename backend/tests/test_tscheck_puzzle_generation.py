@@ -1,9 +1,10 @@
 """Backend coverage for the 'Checking still correct for all three designs' criterion.
 
 Validates GET /api/puzzles/new for each of the three topologies: structurally correct
-response (given/given_cells/solution/steps) and internally consistent Ohm's-law math
-(E = I * R per element, and P = E * I), which is exactly what the frontend relies on
-when it marks the Check Answers table "15 / 15 correct".
+response (given/given_cells, and crucially NO solution/steps leaked), then uses
+POST /api/puzzles/{id}/reveal to fetch the solution and check internal Ohm's-law
+consistency (E = I * R per element, and P = E * I) — exactly what the frontend relies
+on when it marks the Check Answers table "15 / 15 correct".
 """
 
 import httpx
@@ -22,13 +23,22 @@ def test_puzzle_new_returns_consistent_solution(client: httpx.Client, topology: 
 
     assert body["topology"] == topology
     assert isinstance(body["given_cells"], list) and len(body["given_cells"]) == 5
-    assert isinstance(body["solution"], list) and len(body["solution"]) == 5
-    elements = {row["element"] for row in body["solution"]}
+    # New contract: the puzzle fetch must NOT leak the solution or worked steps.
+    assert "solution" not in body
+    assert "steps" not in body
+
+    # Fetch the solution via reveal to check internal consistency (this also exercises
+    # the reveal endpoint's shape for each topology).
+    rev = client.post(api_url(f"/puzzles/{body['id']}/reveal"))
+    assert rev.status_code == 200, rev.text
+    rev_body = rev.json()
+    assert isinstance(rev_body["solution"], list) and len(rev_body["solution"]) == 5
+    elements = {row["element"] for row in rev_body["solution"]}
     assert elements == {"R1", "R2", "R3", "R4", "Total"}
 
     # Every row must satisfy Ohm's law and the power law to ~1% (the same tolerance
     # the frontend uses for Check Answers), proving the generated puzzle is self-consistent.
-    for row in body["solution"]:
+    for row in rev_body["solution"]:
         e, i, r, w = row["E"], row["I"], row["R"], row["W"]
         assert abs(e - i * r) <= max(0.02, 0.01 * abs(e)), f"{topology}/{row['element']}: E != I*R ({e} vs {i*r})"
         assert abs(w - e * i) <= max(0.02, 0.01 * abs(w)), f"{topology}/{row['element']}: P != E*I ({w} vs {e * i})"

@@ -3,12 +3,17 @@
 Values are chosen so every E, I, R, W answer is exact to at most 2 decimal places.
 """
 import random
+import uuid
+from datetime import datetime, timezone
 from fractions import Fraction as F
 from typing import Callable, Optional, get_args
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Cookie, HTTPException
 
-from models.puzzle import ElementValues, GivenValues, Puzzle, SolutionStep, Topology
+from lib.db import db
+from models.puzzle import (CheckRequest, CheckResponse, ElementValues, GivenValues, Puzzle, Reveal,
+                           ScoreResult, SolutionStep, Topology)
+from routers.auth import current_user
 
 router = APIRouter(prefix="/puzzles", tags=["puzzles"])
 
@@ -184,7 +189,8 @@ STEPS: dict[str, Callable] = {
 }
 
 
-def build_puzzle(seed: Optional[int] = None, topology: Optional[str] = None, exclude: Optional[str] = None) -> Puzzle:
+def build_puzzle(seed: Optional[int] = None, topology: Optional[str] = None, exclude: Optional[str] = None) -> dict:
+    """Full puzzle document (incl. solution + steps) as stored in Mongo."""
     rng = random.Random(seed)
     if topology is None:
         topology = rng.choice([t for t in TOPOLOGIES if t != exclude] or TOPOLOGIES)
@@ -199,12 +205,104 @@ def build_puzzle(seed: Optional[int] = None, topology: Optional[str] = None, exc
     else:
         given = GivenValues(R1=r[0], R2=r[1], R3=r[2], R4=r[3], E=float(e))
         given_cells.append("E-Total")
-    return Puzzle(topology=topology, given=given, given_cells=given_cells, solution=solution,
-                  steps=STEPS[topology](r, rows, inter))
+    return {
+        "id": str(uuid.uuid4()), "topology": topology, "given": given.model_dump(), "given_cells": given_cells,
+        "solution": [x.model_dump() for x in solution], "steps": [x.model_dump() for x in STEPS[topology](r, rows, inter)],
+        "issued_at": datetime.now(timezone.utc), "revealed": False, "locked": False,
+    }
+
+
+# --- scoring -------------------------------------------------------------------------------
+TOLERANCE = 0.01  # ±1%
+POINTS_PER_BOX = 10
+FULL_POINTS_SECONDS = 120  # full points if checked within 2 minutes
+ZERO_POINTS_SECONDS = 900  # nothing left at 15 minutes
+
+
+def time_factor(elapsed: float) -> float:
+    if elapsed <= FULL_POINTS_SECONDS:
+        return 1.0
+    return max(0.0, 1 - (elapsed - FULL_POINTS_SECONDS) / (ZERO_POINTS_SECONDS - FULL_POINTS_SECONDS))
+
+
+def grade(doc: dict, answers: dict[str, str]) -> dict[str, str]:
+    expected = {f"{q}-{row['element']}": row[q] for row in doc["solution"] for q in ("E", "I", "R", "W")}
+    results = {}
+    for key, exp in expected.items():
+        if key in doc["given_cells"]:
+            continue
+        raw = (answers.get(key) or "").strip().replace(",", ".")
+        if not raw:
+            results[key] = "blank"
+            continue
+        try:
+            val = float(raw)
+        except ValueError:
+            results[key] = "incorrect"
+            continue
+        results[key] = "correct" if abs(val - exp) <= abs(exp) * TOLERANCE + 1e-9 else "incorrect"
+    return results
+
+
+async def _get_doc(puzzle_id: str) -> dict:
+    doc = await db.puzzles.find_one({"id": puzzle_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Puzzle not found — load a new puzzle")
+    return doc
+
+
+def _elapsed(doc: dict, now: datetime) -> float:
+    return (now - doc["issued_at"].replace(tzinfo=timezone.utc)).total_seconds()
 
 
 @router.get("/new", response_model=Puzzle)
 async def new_puzzle(seed: Optional[int] = None, topology: Optional[str] = None, exclude: Optional[str] = None):
     if topology is not None and topology not in TOPOLOGIES:
         raise HTTPException(status_code=422, detail=f"topology must be one of {TOPOLOGIES}")
-    return build_puzzle(seed, topology, exclude)
+    doc = build_puzzle(seed, topology, exclude)
+    await db.puzzles.insert_one(dict(doc))
+    return Puzzle(**doc)
+
+
+@router.post("/{puzzle_id}/check", response_model=CheckResponse)
+async def check(puzzle_id: str, body: CheckRequest, session: Optional[str] = Cookie(default=None)):
+    doc = await _get_doc(puzzle_id)
+    now = datetime.now(timezone.utc)
+    results = grade(doc, body.answers)
+    correct = sum(1 for v in results.values() if v == "correct")
+    elapsed = _elapsed(doc, now)
+
+    if doc.get("locked"):
+        score = ScoreResult(status="already_locked", points=doc.get("points", 0), elapsed_seconds=doc.get("locked_elapsed", elapsed))
+    elif doc.get("revealed"):
+        score = ScoreResult(status="revealed", points=0, elapsed_seconds=elapsed)
+    else:
+        user = await current_user(session)
+        if not user:
+            score = ScoreResult(status="not_signed_in", points=0, elapsed_seconds=elapsed)
+        else:
+            points = round(correct * POINTS_PER_BOX * time_factor(elapsed))
+            # Atomic lock: only the first check of an unrevealed puzzle scores.
+            locked = await db.puzzles.find_one_and_update(
+                {"id": puzzle_id, "locked": {"$ne": True}, "revealed": {"$ne": True}},
+                {"$set": {"locked": True, "points": points, "locked_elapsed": elapsed, "user_id": user.id}},
+            )
+            if locked:
+                await db.scores.insert_one({
+                    "id": str(uuid.uuid4()), "user_id": user.id, "username": user.username, "puzzle_id": puzzle_id,
+                    "points": points, "correct": correct, "total": len(results), "elapsed_seconds": elapsed,
+                    "created_at": now,
+                })
+                score = ScoreResult(status="awarded", points=points, elapsed_seconds=elapsed)
+            else:
+                fresh = await _get_doc(puzzle_id)
+                score = (ScoreResult(status="already_locked", points=fresh.get("points", 0), elapsed_seconds=fresh.get("locked_elapsed", elapsed))
+                         if fresh.get("locked") else ScoreResult(status="revealed", points=0, elapsed_seconds=elapsed))
+    return CheckResponse(results=results, correct=correct, total=len(results), score=score)
+
+
+@router.post("/{puzzle_id}/reveal", response_model=Reveal)
+async def reveal(puzzle_id: str):
+    doc = await _get_doc(puzzle_id)
+    await db.puzzles.update_one({"id": puzzle_id}, {"$set": {"revealed": True}})
+    return Reveal(solution=doc["solution"], steps=doc["steps"])
