@@ -20,3 +20,4 @@ Single-page electrician-training worksheet. No auth, no DB persistence.
 - Clear resets inputs; New Puzzle fetches a fresh puzzle.
 - If backend unreachable, bundled sample puzzle (`src/lib/samplePuzzle.ts`, seed 6) is shown.
 - Persistence: current puzzle + answers + check results + revealed state are saved to localStorage (`combination-worksheet:v1`) on every change and restored on load — reload/tab switch keeps the same puzzle and entries. Only "New Puzzle" replaces the puzzle (and clears entries); "Clear" empties entries. The offline sample is never saved.
+- Ohm's law formula wheel (P, I, E, R with 12 formulas, from user's printed chart): sticky right sidebar on ≥1024px (formula-wheel-sidebar); on smaller screens a floating 'Formulas' button (formula-wheel-toggle) bottom-right opens it in a corner popup (formula-wheel-popup).

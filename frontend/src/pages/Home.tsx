@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Schematic from "@/components/circuit/Schematic";
 import AnswerTable from "@/components/circuit/AnswerTable";
 import WorkedSolution from "@/components/circuit/WorkedSolution";
+import FormulaWheelPanel from "@/components/circuit/FormulaWheel";
 
 const fetchPuzzle = (exclude?: string) =>
   apiGet<Puzzle>(`/puzzles/new${exclude ? `?exclude=${exclude}` : ""}`);
@@ -80,7 +81,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#F8FAFC] px-4 py-6 sm:px-6 sm:py-10">
       <Toaster />
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto grid max-w-4xl gap-6 lg:max-w-7xl lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+        <div className="min-w-0">
         <article className="rounded-sm border border-[#CBD5E1] bg-white font-serif text-[#1a1a1a] shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
           <h1 className="sr-only" data-testid="app-title">Combination Circuit Practice</h1>
 
@@ -168,6 +170,8 @@ export default function Home() {
             Offline — showing a sample problem.
           </p>
         )}
+        </div>
+        <FormulaWheelPanel />
       </div>
     </main>
   );
