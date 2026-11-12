@@ -85,9 +85,10 @@ interface Props {
   clock: string;
   clockNote: string;
   pointsPerBox: number | null;
+  accounts: boolean; // false in the GitHub Pages build (no sign-in)
 }
 
-export default function PlayerBar({ user, clock, clockNote, pointsPerBox }: Props) {
+export default function PlayerBar({ user, clock, clockNote, pointsPerBox, accounts }: Props) {
   return (
     <section
       className="mb-4 rounded-sm border border-[#CBD5E1] bg-white px-4 py-3 font-sans shadow-[0_1px_0_#CBD5E1] sm:px-5"
@@ -95,7 +96,11 @@ export default function PlayerBar({ user, clock, clockNote, pointsPerBox }: Prop
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1">
-          {user ? (
+          {!accounts ? (
+            <p className="text-sm text-[#475569]" data-testid="player-local-note">
+              Solve fast for more points — your score is saved on this device.
+            </p>
+          ) : user ? (
             <div className="flex items-center gap-3">
               <UserRound className="size-5 text-[#1E3A8A]" />
               <span className="text-sm text-[#475569]">

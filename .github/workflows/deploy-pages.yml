@@ -1,0 +1,51 @@
+# Builds the browser-only version of the app (no server, no shared leaderboard) and publishes it
+# to GitHub Pages. One-time setup in the repo: Settings → Pages → Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: yarn install --network-timeout 600000
+      - name: Build static site
+        env:
+          VITE_STATIC_MODE: "1"
+          DISABLE_VISUAL_EDITS: "true"
+          DISABLE_EMERGENT_OVERLAY: "true"
+        run: |
+          yarn vite build --base=/${{ github.event.repository.name }}/
+          cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

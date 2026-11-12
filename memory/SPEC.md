@@ -32,3 +32,9 @@ Single-page electrician-training worksheet. No auth, no DB persistence.
 - localStorage key now `combination-worksheet:v2` (puzzle, answers, results, score, reveal, showSolution).
 - If a signed-in player presses Check with empty boxes before scoring, check-confirm-dialog asks to confirm (check-confirm-button) since the first check locks points.
 - Leaderboard reset: LEADERBOARD_RESET_AT in backend/routers/leaderboard.py — only scores created after it count (reset requested by user).
+
+## GitHub Pages build (browser-only, no server) — added at user request
+- Same frontend code; build flag `VITE_STATIC_MODE=1` switches `src/lib/puzzleService.ts` to in-browser generation/grading (`src/lib/offline/generator.ts`, TS port of backend generator — keep in sync).
+- No accounts / no shared leaderboard; `MyStatsCard` shows personal points (localStorage `combination-stats:v1`); puzzles with solutions in `combination-puzzles:v1` (last 20).
+- Workflow `.github/workflows/deploy-pages.yml` builds with `--base=/<repo>/` and publishes on push to `main`. Router uses `basename={import.meta.env.BASE_URL}`.
+- Default (Emergent) build is unchanged: server scoring + leaderboard.

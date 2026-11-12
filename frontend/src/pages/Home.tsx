@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, CheckCheck, Eraser, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { ApiError, apiGet, apiPost } from "@/lib/api";
-import type { CheckRequest, CheckResponse, Element, Puzzle, Quantity, Reveal, ScoreResult } from "@/types/puzzle";
+import { ApiError, apiGet } from "@/lib/api";
+import { STATIC_MODE, checkPuzzle, newPuzzle, revealPuzzle } from "@/lib/puzzleService";
+import type { CheckRequest, Element, Puzzle, Quantity, Reveal, ScoreResult } from "@/types/puzzle";
 import type { User } from "@/types/users";
 import { SAMPLE_PUZZLE, SAMPLE_REVEAL } from "@/lib/samplePuzzle";
 import { ELEMENTS, POINTS_PER_BOX, QUANTITIES, TOLERANCE, cellKey, checkAnswersLocally, formatClock, isGiven, timeFactor } from "@/lib/circuit";
@@ -26,16 +27,15 @@ import WorkedSolution from "@/components/circuit/WorkedSolution";
 import FormulaWheelPanel from "@/components/circuit/FormulaWheel";
 import PlayerBar from "@/components/game/PlayerBar";
 import LeaderboardCard from "@/components/game/LeaderboardCard";
+import MyStatsCard from "@/components/game/MyStatsCard";
 
-const fetchPuzzle = (exclude?: string) =>
-  apiGet<Puzzle>(`/puzzles/new${exclude ? `?exclude=${exclude}` : ""}`);
 
 const isLocked = (s: ScoreResult | null) => s?.status === "awarded" || s?.status === "already_locked";
 
 function scoreMessage(s: ScoreResult): string {
   switch (s.status) {
     case "awarded":
-      return `+${s.points} points added to the leaderboard (checked at ${formatClock(s.elapsed_seconds)}).`;
+      return `+${s.points} points added to ${STATIC_MODE ? "your total" : "the leaderboard"} (checked at ${formatClock(s.elapsed_seconds)}).`;
     case "already_locked":
       return `Score locked at ${s.points} points on your first check — fixing answers now is practice only.`;
     case "revealed":
@@ -66,13 +66,14 @@ export default function Home() {
     queryFn: () => apiGet<User | null>("/auth/me"),
     staleTime: 5 * 60_000,
     retry: false,
+    enabled: !STATIC_MODE, // GitHub Pages build has no accounts
   });
-  const user = me.isError ? null : me.data;
+  const user = me.isError || STATIC_MODE ? null : me.data;
 
   // Only fetch a first puzzle when nothing was saved.
   const first = useQuery({
     queryKey: ["puzzle", "first"],
-    queryFn: () => fetchPuzzle(),
+    queryFn: () => newPuzzle(),
     enabled: current === null,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -96,7 +97,7 @@ export default function Home() {
 
   // New Puzzle always switches to a different circuit design than the one on screen.
   const next = useMutation({
-    mutationFn: () => fetchPuzzle(puzzle.topology),
+    mutationFn: () => newPuzzle(puzzle.topology),
     onSuccess: (p) => {
       setCurrent(p);
       resetWork();
@@ -107,13 +108,14 @@ export default function Home() {
   });
 
   const check = useMutation({
-    mutationFn: (body: CheckRequest) => apiPost<CheckResponse>(`/puzzles/${puzzle.id}/check`, body),
+    mutationFn: (body: CheckRequest) => checkPuzzle(puzzle.id, body),
     onSuccess: (r) => {
       setResults(r.results);
       setScore(r.score);
       if (r.score.status === "awarded") {
         toast.success(`+${r.score.points} points!`);
         qc.invalidateQueries({ queryKey: ["leaderboard"] });
+        qc.invalidateQueries({ queryKey: ["my-stats"] });
       }
     },
     onError: (e) =>
@@ -125,7 +127,7 @@ export default function Home() {
   });
 
   const revealMut = useMutation({
-    mutationFn: () => apiPost<Reveal>(`/puzzles/${puzzle.id}/reveal`),
+    mutationFn: () => revealPuzzle(puzzle.id),
     onSuccess: (r) => {
       setReveal(r);
       setShowSolution(true);
@@ -143,7 +145,7 @@ export default function Home() {
     const blanks = ELEMENTS.flatMap((el) => QUANTITIES.map((q) => [q, el] as const)).filter(
       ([q, el]) => !isGiven(puzzle, q, el) && !(answers[cellKey(q, el)] ?? "").trim(),
     ).length;
-    if (user && !isLocked(score) && score?.status !== "revealed" && blanks > 0) {
+    if ((user || STATIC_MODE) && !isLocked(score) && score?.status !== "revealed" && blanks > 0) {
       setBlankCount(blanks);
       setConfirmCheck(true);
       return;
@@ -212,6 +214,7 @@ export default function Home() {
             clock={isSample ? "--:--" : formatClock(shownElapsed)}
             clockNote={clockNote}
             pointsPerBox={isSample ? null : pointsPerBox}
+            accounts={!STATIC_MODE}
           />
           <article className="rounded-sm border border-[#CBD5E1] bg-white font-serif text-[#1a1a1a] shadow-[0_1px_0_#CBD5E1,0_12px_32px_-16px_rgba(15,23,42,0.18)]">
             <h1 className="sr-only" data-testid="app-title">Combination Circuit Practice</h1>
@@ -313,7 +316,7 @@ export default function Home() {
         </div>
         <div className="space-y-6 lg:sticky lg:top-6">
           <FormulaWheelPanel />
-          <LeaderboardCard me={user?.username} />
+          {STATIC_MODE ? <MyStatsCard /> : <LeaderboardCard me={user?.username} />}
         </div>
       </div>
 
