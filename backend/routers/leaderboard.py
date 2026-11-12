@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
@@ -7,11 +7,16 @@ from models.users import Leaderboard, LeaderboardEntry
 
 router = APIRouter(tags=["leaderboard"])
 
+# Leaderboard "season" start: only scores earned after this moment count. Move it forward to reset
+# the board for everyone (older scores stay in the DB but stop counting). Usernames/PINs are kept.
+LEADERBOARD_RESET_AT = datetime(2026, 11, 12, 14, 38, 0, tzinfo=timezone.utc)
+
 
 @router.get("/leaderboard", response_model=Leaderboard)
 async def leaderboard(limit: int = 50):
     limit = max(1, min(limit, 100))
     rows = await db.scores.aggregate([
+        {"$match": {"created_at": {"$gte": LEADERBOARD_RESET_AT}}},
         {"$group": {"_id": "$user_id", "username": {"$last": "$username"}, "points": {"$sum": "$points"},
                     "puzzles": {"$sum": 1}, "correct": {"$sum": "$correct"},
                     "last_played": {"$max": "$created_at"}}},

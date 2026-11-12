@@ -31,3 +31,4 @@ Single-page electrician-training worksheet. No auth, no DB persistence.
 - UI: player-bar (sign-in form or "Playing as X" + sign out) with live timer (puzzle-timer-clock) and "N pts per correct box now"; leaderboard-card in right column (below worksheet on mobile).
 - localStorage key now `combination-worksheet:v2` (puzzle, answers, results, score, reveal, showSolution).
 - If a signed-in player presses Check with empty boxes before scoring, check-confirm-dialog asks to confirm (check-confirm-button) since the first check locks points.
+- Leaderboard reset: LEADERBOARD_RESET_AT in backend/routers/leaderboard.py — only scores created after it count (reset requested by user).
